@@ -36,12 +36,19 @@ int errF;
 int stack[STACK_SIZE+1]; //배열값이 0이 아닌 1부터 시작하기 위함
 int stack_mm; //스택 관리
 Token token; //토큰값을 저장하기 위한 변수
+char buf[80], *bufp; //입력버퍼
+int ch; //가져온 문자를 저장
+int var[26]; //변수 a-z
+int errF; //오류발생
 
 int main(void)
 {
 	while (1)
 	{
-		input();
+		input(); //입력
+		token = nextTKN(); //최초토큰
+		statement();
+		if (errF) cout << "--err--\n";
 	}
 
 	return 0;
@@ -51,5 +58,13 @@ void input()
 {
 	errF = 0;
 	stack_mm = 0;
+	cin.getline(buf, 80);
+	bufp = buf;
+	ch = nextCh();
 
+}
+
+void statement()
+{
+	int vNbr;
 }
