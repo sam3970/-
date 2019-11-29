@@ -67,4 +67,44 @@ void input()
 void statement()
 {
 	int vNbr;
+
+	switch (token.kind)
+	{
+	case VarName:
+		vNbr = token.intVal;
+		token = nextTkn();
+		chkTkn(assign); if (errF) break;
+		token = nextTkn();
+		expression();
+		var[vNbr] = pop();
+		break;
+	case Print:
+		token = nextTkn();
+		expression();
+		chkTkn(EofTkn); if (errF) break;
+		cout << "" << pop() << endl;
+		return;
+	default:
+		errF = 1;
+	}
+	chkTkn(EofTkn);
+}
+
+void expression()
+{
+	TknKind op;
+
+	term();
+	while (token.kind==Plus || token.kind==Minus)
+	{
+		op = token.kind;
+		token = nextTkn();
+		term();
+		operate(op);
+	}
+}
+
+void term()
+{
+	TknKind op;
 }
