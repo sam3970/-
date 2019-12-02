@@ -107,4 +107,40 @@ void expression()
 void term()
 {
 	TknKind op;
+	
+	factor();
+	while (token.kind == Multi || token.kind == Divi)
+	{
+		op = token.kind;
+		token = nextTkn();
+		factor();
+		operate(op);
+	}
+}
+
+void factor()
+{
+	switch (token.kind)
+	{
+	case VarName:
+		push(var[token.intVal]);
+		break;
+	case IntNum:
+		push(token.intVal);
+		break;
+	case Lparen:
+		token = nextTkn();
+		expression();
+		chkTkn(Rparen);
+		break;
+	default:
+		errF = 1;
+	}
+	token = nextTkn();
+}
+
+Token nextTkn()
+{
+	TknKind kd = Others;
+	int num;
 }
