@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include <cstdlib>
 #include <cctype>
 
@@ -6,24 +6,24 @@ using namespace std;
 
 #define STACK_SIZE 20
 
-//ÅäÅ« Á¾·ù
+//í† í° ì¢…ë¥˜
 enum TknKind {
-	print, Lparen, Rparen, Plus, Minus, Multi, Divi, Pow
+	Print, Lparen, Rparen, Plus, Minus, Multi, Divi, Pow
 	,Assign, VarName, IntNum, EofTkn, Others 
 };
 
 struct Token
 {
-	TknKind kind; //¿­°ÅÇü º¯¼ö¸¦ ±¸Á¶Ã¼¿¡ ¼±¾ğ
-	int intVal; //»ó¼ö°ªÀÌ³ª º¯¼ö ¹øÈ£¸¦ ÁöÁ¤ÇÏ´Â º¯¼ö
+	TknKind kind; //ì—´ê±°í˜• ë³€ìˆ˜ë¥¼ êµ¬ì¡°ì²´ì— ì„ ì–¸
+	int intVal; //ìƒìˆ˜ê°’ì´ë‚˜ ë³€ìˆ˜ ë²ˆí˜¸ë¥¼ ì§€ì •í•˜ëŠ” ë³€ìˆ˜
 	
-	Token() //±âº» »ı¼ºÀÚ
+	Token() //ê¸°ë³¸ ìƒì„±ì
 	{
 		kind = Others;
 		intVal = 0;
 	}
 
-	Token(TknKind k, int d = 0) //¸Å°³º¯¼ö°¡ ÀÖ´Â »ı¼ºÀÚ
+	Token(TknKind k, int d = 0) //ë§¤ê°œë³€ìˆ˜ê°€ ìˆëŠ” ìƒì„±ì
 	{
 		kind = k;
 		int val = d;
@@ -31,22 +31,32 @@ struct Token
 };
 
 void input();
+void statement();
+void expression();
+void term();
+void factor();
+Token nextTkn();
+int nextCh();
+void operate(TknKind op);
+void push(int n);
+int pop();
+void chkTkn(TknKind kd);
 
 int errF;
-int stack[STACK_SIZE+1]; //¹è¿­°ªÀÌ 0ÀÌ ¾Æ´Ñ 1ºÎÅÍ ½ÃÀÛÇÏ±â À§ÇÔ
-int stack_mm; //½ºÅÃ °ü¸®
-Token token; //ÅäÅ«°ªÀ» ÀúÀåÇÏ±â À§ÇÑ º¯¼ö
-char buf[80], *bufp; //ÀÔ·Â¹öÆÛ
-int ch; //°¡Á®¿Â ¹®ÀÚ¸¦ ÀúÀå
-int var[26]; //º¯¼ö a-z
-int errF; //¿À·ù¹ß»ı
+int stack[STACK_SIZE+1]; //ë°°ì—´ê°’ì´ 0ì´ ì•„ë‹Œ 1ë¶€í„° ì‹œì‘í•˜ê¸° ìœ„í•¨
+int stack_mm; //ìŠ¤íƒ ê´€ë¦¬
+Token token; //í† í°ê°’ì„ ì €ì¥í•˜ê¸° ìœ„í•œ ë³€ìˆ˜
+char buf[80], *bufp; //ì…ë ¥ë²„í¼
+int ch; //ê°€ì ¸ì˜¨ ë¬¸ìë¥¼ ì €ì¥
+int var[26]; //ë³€ìˆ˜ a-z
+int errF; //ì˜¤ë¥˜ë°œìƒ
 
 int main(void)
 {
 	while (1)
 	{
-		input(); //ÀÔ·Â
-		token = nextTKN(); //ÃÖÃÊÅäÅ«
+		input(); //ì…ë ¥
+		token = nextTkn(); //ìµœì´ˆí† í°
 		statement();
 		if (errF) cout << "--err--\n";
 	}
@@ -73,7 +83,7 @@ void statement()
 	case VarName:
 		vNbr = token.intVal;
 		token = nextTkn();
-		chkTkn(assign); if (errF) break;
+		chkTkn(Assign); if (errF) break;
 		token = nextTkn();
 		expression();
 		var[vNbr] = pop();
@@ -139,8 +149,41 @@ void factor()
 	token = nextTkn();
 }
 
-Token nextTkn()
+Token nextTkn()                            /* ë‹¤ìŒ í† í° */
 {
 	TknKind kd = Others;
-	int num;
+	int  num;
+
+	while (isspace(ch))                    /* ê³µë°± ê±´ë„ˆë›°ê¸° */
+		ch = nextCh();
+	if (isdigit(ch)) {                     /* ìˆ«ì */
+		for (num = 0; isdigit(ch); ch = nextCh())
+			num = num * 10 + (ch - '0');
+		return Token(IntNum, num);
+	}
+	else if (islower(ch)) {                /* ë³€ìˆ˜ */
+		num = ch - 'a';                    /* ë³€ìˆ˜ ë²ˆí˜¸ 0-25 */
+		ch = nextCh();
+		return Token(VarName, num);
+	}
+	else {
+		switch (ch) {
+		case '(':  kd = Lparen; break;
+		case ')':  kd = Rparen; break;
+		case '+':  kd = Plus;   break;
+		case '-':  kd = Minus;  break;
+		case '*':  kd = Multi;  break;
+		case '/':  kd = Divi;   break;
+		case '=':  kd = Assign; break;
+		case '?':  kd = Print;  break;
+		case '\0': kd = EofTkn; break;       // ê±“: ê¶ê·¢ê·©ë³ºê·¢ê¶«ê±•
+		}
+		ch = nextCh();
+		return Token(kd);
+	}
+}
+
+int nextCh()                               /* ë‹¤ìŒ 1ë¬¸ì */
+{
+	if (*bufp == '\0') return '\0'; else return *bufp++;
 }
