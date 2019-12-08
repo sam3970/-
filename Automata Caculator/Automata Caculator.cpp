@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <cstdlib>
 #include <cctype>
+#include <cmath>
 
 using namespace std;
 
@@ -41,6 +42,7 @@ void operate(TknKind op);
 void push(int n);
 int pop();
 void chkTkn(TknKind kd);
+//double pow(double x, double y);
 
 int errF;
 int stack[STACK_SIZE+1]; //배열값이 0이 아닌 1부터 시작하기 위함
@@ -61,6 +63,7 @@ int main(void)
 		if (errF) cout << "--err--\n";
 	}
 
+	system("pause");
 	return 0;
 }
 
@@ -173,10 +176,11 @@ Token nextTkn()                            /* 다음 토큰 */
 		case '+':  kd = Plus;   break;
 		case '-':  kd = Minus;  break;
 		case '*':  kd = Multi;  break;
+		case '^':  kd = Pow;    break;
 		case '/':  kd = Divi;   break;
 		case '=':  kd = Assign; break;
 		case '?':  kd = Print;  break;
-		case '\0': kd = EofTkn; break;       // 걓: 궞귢귩볺귢궫걕
+		case '\0': kd = EofTkn; break;
 		}
 		ch = nextCh();
 		return Token(kd);
@@ -186,4 +190,37 @@ Token nextTkn()                            /* 다음 토큰 */
 int nextCh()                               /* 다음 1문자 */
 {
 	if (*bufp == '\0') return '\0'; else return *bufp++;
+}
+
+void operate(TknKind op)                   /* 연산 실행 */
+{
+	int d2 = pop(), d1 = pop();
+
+	if (op == Divi && d2 == 0) { cout << "  division by 0\n"; errF = 1; }
+	if (errF) return;
+	switch (op) {
+	case Plus:  push(d1 + d2); break;
+	case Minus: push(d1 - d2); break;
+	case Multi: push(d1*d2); break;
+	case Divi:  push(d1 / d2); break;
+	}
+}
+
+void push(int n)                           /* 스택 저장 */
+{
+	if (errF) return;
+	if (stack_mm + 1 > STACK_SIZE) { cout << "stack overflow\n"; exit(1); }
+	stack[++stack_mm] = n;
+}
+
+int pop()                                  /* 스택 추출 */
+{
+	if (errF) return 1;                    /* 오류 시는 단순히 1을 반환한다 */
+	if (stack_mm < 1) { cout << "stack underflow\n"; exit(1); }
+	return stack[stack_mm--];
+}
+
+void chkTkn(TknKind kd)                    /* 토큰 종인 확인 */
+{
+	if (token.kind != kd) errF = 1;        /* 불일치 */
 }
