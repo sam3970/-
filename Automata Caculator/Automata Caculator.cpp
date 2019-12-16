@@ -27,7 +27,7 @@ struct Token
 	Token(TknKind k, int d = 0) //매개변수가 있는 생성자
 	{
 		kind = k;
-		int val = d;
+		intVal = d;
 	}
 };
 
@@ -44,7 +44,6 @@ int pop();
 void chkTkn(TknKind kd);
 //double pow(double x, double y);
 
-int errF;
 int stack[STACK_SIZE+1]; //배열값이 0이 아닌 1부터 시작하기 위함
 int stack_mm; //스택 관리
 Token token; //토큰값을 저장하기 위한 변수
@@ -122,7 +121,7 @@ void term()
 	TknKind op;
 	
 	factor();
-	while (token.kind == Multi || token.kind == Divi)
+	while (token.kind == Multi || token.kind == Divi || token.kind == Pow)
 	{
 		op = token.kind;
 		token = nextTkn();
@@ -176,7 +175,7 @@ Token nextTkn()                            /* 다음 토큰 */
 		case '+':  kd = Plus;   break;
 		case '-':  kd = Minus;  break;
 		case '*':  kd = Multi;  break;
-		case '^':  kd = Pow;    break;
+		case '^':  kd = Pow;    break; //pow 추가
 		case '/':  kd = Divi;   break;
 		case '=':  kd = Assign; break;
 		case '?':  kd = Print;  break;
@@ -195,6 +194,7 @@ int nextCh()                               /* 다음 1문자 */
 void operate(TknKind op)                   /* 연산 실행 */
 {
 	int d2 = pop(), d1 = pop();
+	//double a2 = pop(), a1 = pop();
 
 	if (op == Divi && d2 == 0) { cout << "  division by 0\n"; errF = 1; }
 	if (errF) return;
@@ -203,6 +203,7 @@ void operate(TknKind op)                   /* 연산 실행 */
 	case Minus: push(d1 - d2); break;
 	case Multi: push(d1*d2); break;
 	case Divi:  push(d1 / d2); break;
+	case Pow:   push(pow(d1, d2)); break;
 	}
 }
 
